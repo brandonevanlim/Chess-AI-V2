@@ -32,7 +32,7 @@ def board_to_tensor(board):
         row = square // 8
         col = square % 8
         tensor[channel, row, col] = 1.0
-    return torch.tensor(tensor)
+    return torch.tensor(tensor).float()
 
 def move_to_label(move):
     """Encode a chess.Move as an integer 0-4095.
@@ -70,3 +70,37 @@ def parse_pgn(pgn_path, max_games=10000):
             games_parsed += 1
             if games_parsed % 500 == 0:
                 print(f"  Parsed {games_parsed} games...")
+
+def count_games(pgn_path):
+    """Count total games in the PGN file (used for wrap-around)."""
+    count = 0
+    with open(pgn_path) as f:
+        while True:
+            offset = chess.pgn.read_game(f)
+            if offset is None:
+                break
+            count += 1
+    return count
+
+def parse_pgn_chunk(pgn_path, start_game=0, num_games=20000):
+    """Yields (board_tensor, move_label) pairs from a chunk of games.
+
+    Skips the first `start_game` games, then reads `num_games` games.
+    This lets each training run read a different slice of the file.
+    """
+    with open(pgn_path) as f:
+        for _ in range(start_game):
+            if chess.pgn.read_game(f) is None:
+                return
+        games_parsed = 0
+        while games_parsed < num_games:
+            game = chess.pgn.read_game(f)
+            if game is None:
+                break
+            board = game.board()
+            for move in game.mainline_moves():
+                yield board_to_tensor(board), move_to_label(move)
+                board.push(move)
+            games_parsed += 1
+            if games_parsed % 500 == 0:
+                print(f"  Parsed {games_parsed} games (from game {start_game})...")
