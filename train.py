@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader, TensorDataset, random_split
 from model import ChessCNN
 from data import parse_pgn_chunk
 
-CHUNK_SIZE = 2500          # games loaded per run (previous was 6000, changed to 2500 due to RAM issues)
+CHUNK_SIZE = 6000          # games loaded per run (reverted)
 PROGRESS_FILE = "progress.json"
 TOTAL_GAMES = 3000000       # approx games in your file; used for wrap-around
 
