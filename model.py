@@ -17,7 +17,7 @@ class ResBlock(nn.Module):
         return self.relu(x + residual)
 
 class ChessCNN(nn.Module):
-    def __init__(self, num_res_blocks=6, channels=96, dropout=0.3): # Changed num_res_blocks from 4 to 6 and channels from 64 to 96 to increase validation accuracy
+    def __init__(self, num_res_blocks=4, channels=64, dropout=0.3): # Changed num_res_blocks back to increase validation accuracy
         super().__init__()
         self.input_conv = nn.Sequential(
             nn.Conv2d(12, channels, 3, padding=1),
